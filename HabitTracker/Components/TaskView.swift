@@ -8,138 +8,134 @@
 import SwiftUI
 
 struct TaskView: View {
-    var task: HabitModel
+    @Binding var task: HabitModel
+    var selectedDate: Date
 
-    @State private var isCompleted = false
-    @State private var rotate = false
-    @State private var isExpanded = false
-    @State private var subtaskStates: [UUID: Bool] = [:]
+    @StateObject private var viewModel: TaskViewModel
+
+    init(task: Binding<HabitModel>, selectedDate: Date) {
+        _task = task
+        self.selectedDate = selectedDate
+        _viewModel = StateObject(wrappedValue: TaskViewModel(task: task.wrappedValue, selectedDate: selectedDate))
+    }
 
     var body: some View {
         VStack {
-            Spacer()
-
             ZStack {
                 RoundedRectangle(cornerRadius: 25)
-                    .fill(
-                        LinearGradient(
-                            colors: isCompleted
-                                ? [Color("TaskYellow"), Color("TaskGreen")]
-                                : [task.color, task.color.opacity(0.8)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 370, height: isExpanded ? nil : 70)
-                    .rotation3DEffect(
-                        .degrees(rotate ? 180 : 0),
-                        axis: (x: 1, y: 0, z: 0)
-                    )
-                    .animation(.easeInOut(duration: 1.5), value: rotate)
-                    .clipped()
+                    .fill(viewModel.gradient)
+                    .shadow(radius: 4)
+                    .rotation3DEffect(.degrees(viewModel.rotate ? 180 : 0), axis: (x: 1, y: 0, z: 0))
 
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 10) {
-                        Button(action: {
-                            rotate.toggle()
-                            isCompleted.toggle()
-                        }) {
-                            Image(systemName: isCompleted ? "checkmark.circle.fill" : "checkmark.circle")
-                                .resizable()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(.white)
-                        }
+                cardView()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal)
+            .padding(.vertical, 5)
+            .animation(.easeInOut(duration: 0.8), value: viewModel.rotate)
+        }
+        .onAppear {
+            viewModel.loadSubtaskStates(from: task)
+        }
+        .onChange(of: selectedDate) {
+            viewModel.selectedDate = selectedDate
+            viewModel.loadSubtaskStates(from: task)
+        }
+    }
 
-                        Text(task.name)
-                            .foregroundColor(.black)
-                            .font(.headline)
+    private func cardView() -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Button(action: {
+                    viewModel.toggleCompletion(for: $task)
+                }) {
+                    Image(systemName: viewModel.isCompletedToday ? "checkmark.circle.fill" : "checkmark.circle")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.white)
+                }
 
-                        Spacer()
-                        
-                        CircularProgressView(progress: completionPercentage())
+                Text(task.name)
+                    .foregroundColor(.black)
+                    .font(.headline)
 
-                        Button(action: {
-                            withAnimation {
-                                isExpanded.toggle()
-                            }
-                        }) {
-                            Image(systemName: "chevron.down")
-                                .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                                .foregroundColor(.white)
-                        }
+                Spacer()
+
+                CircularProgressView(progress: viewModel.completionPercentage)
+
+                ZStack {
+                    Image(systemName: "star.fill")
+                        .resizable()
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.yellow)
+                    Text("\(task.currentStreak)")
+                        .font(.caption.bold())
+                        .foregroundColor(.black)
+                }
+
+                Button(action: {
+                    withAnimation {
+                        viewModel.isExpanded.toggle()
                     }
+                }) {
+                    Image(systemName: "chevron.down")
+                        .rotationEffect(.degrees(viewModel.isExpanded ? 180 : 0))
+                        .foregroundColor(.white)
+                }
+            }
 
-                    if isExpanded {
-                        Text(task.note)
-                            .foregroundColor(.black)
-                            .font(.subheadline)
-                            .transition(.opacity)
+            if viewModel.isExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(task.note)
+                        .foregroundColor(.black)
+                        .font(.subheadline)
 
-                        Text("Start: \(formattedDate(task.startDate))")
+                    Text("Start: \(viewModel.formatted(task.startDate))")
+                        .foregroundColor(.black)
+                        .font(.footnote)
+
+                    if let end = task.endDate {
+                        Text("Slutar: \(viewModel.formatted(end))")
                             .foregroundColor(.black)
                             .font(.footnote)
+                    } else {
+                        Text("Varar för alltid")
+                            .foregroundColor(.black)
+                            .font(.footnote)
+                    }
 
-                        if let end = task.endDate {
-                            Text("Slutar: \(formattedDate(end))")
-                                .foregroundColor(.black)
-                                .font(.footnote)
-                        } else {
-                            Text("Varar för alltid")
-                                .foregroundColor(.black)
-                                .font(.footnote)
-                        }
-                        if !task.subtasks.isEmpty {
-                            Divider().padding(.vertical, 5)
-                            
-                            VStack(alignment: .leading, spacing: 6) {
-                                ForEach(task.subtasks) { subtask in
-                                    HStack {
-                                        Button(action: {
-                                            subtaskStates[subtask.id]?.toggle()
-                                            checkIfAllSubtasksCompleted()
-                                        }) {
-                                            Image(systemName: subtaskStates[subtask.id] == true ? "checkmark.circle.fill" : "checkmark.circle")
-                                                .foregroundStyle(.black)
-                                        }
-                                        Text(subtask.title)
+                    if !task.subtasks.isEmpty {
+                        Divider().padding(.vertical, 5)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(task.subtasks) { subtask in
+                                HStack {
+                                    Button(action: {
+                                        viewModel.toggleSubtask(subtask.id, in: $task)
+                                    }) {
+                                        Image(systemName: viewModel.isSubtaskCompleted(subtask.id) ? "checkmark.circle.fill" : "checkmark.circle")
                                             .foregroundStyle(.black)
-                                            .strikethrough(subtaskStates[subtask.id] == true)
                                     }
-                                    .contentShape(Rectangle())
+                                    Text(subtask.title)
+                                        .foregroundStyle(.black)
+                                        .strikethrough(viewModel.isSubtaskCompleted(subtask.id))
                                 }
                             }
                         }
                     }
                 }
-                .padding()
-            }
-
-            Spacer()
-        }
-        .padding(.vertical, 5)
-        .onAppear {
-            for subtask in task.subtasks {
-                subtaskStates[subtask.id] = subtask.isCompleted
             }
         }
+        .padding()
     }
+}
 
-    func formattedDate(_ date: Date) -> String {
-        date.formatted(date: .abbreviated, time: .omitted)
-    }
-    func completionPercentage() -> Double {
-        guard !task.subtasks.isEmpty else { return 0 }
-        let completed = subtaskStates.values.filter { $0 }.count
-        return Double(completed) / Double(task.subtasks.count)
-    }
-    func checkIfAllSubtasksCompleted() {
-        guard !subtaskStates.isEmpty else { return }
-        let allCompleted = subtaskStates.values.allSatisfy { $0 }
-        withAnimation {
-            isCompleted = allCompleted
-            rotate = allCompleted
-        }
-    }
+extension DateFormatter {
+    static let taskDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 }
 
 struct CircularProgressView: View {
@@ -152,7 +148,8 @@ struct CircularProgressView: View {
 
             Circle()
                 .trim(from: 0.0, to: progress)
-                .stroke(progress == 1.0 ? Color.green : Color.blue, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .stroke(progress == 1.0 ? Color.green : Color.blue,
+                        style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(.easeInOut, value: progress)
 
@@ -164,13 +161,28 @@ struct CircularProgressView: View {
     }
 }
 
-#Preview {
-    TaskView(task: HabitModel(
+struct TaskViewPreviewWrapper: View {
+    @State private var task = HabitModel(
         name: "Exempel Task",
         note: "Detta är en exempelbeskrivning.",
-        color: .blue,
-        subtasks: [],
+        colorHex: "#3498DB",
+        subtasks: [
+            .init(title: "Del 1", isCompleted: false),
+            .init(title: "Del 2", isCompleted: false),
+            .init(title: "Del 3", isCompleted: false)
+        ],
         startDate: Date(),
-        endDate: Calendar.current.date(byAdding: .day, value: 30, to: Date())
-    ))
+        endDate: Calendar.current.date(byAdding: .day, value: 30, to: Date()),
+        completionByDate: [:],
+        currentStreak: 0,
+        lastCompletedDate: Calendar.current.date(byAdding: .day, value: -1, to: Date())
+    )
+
+    var body: some View {
+        TaskView(task: $task, selectedDate: Date())
+    }
+}
+
+#Preview {
+    TaskViewPreviewWrapper()
 }

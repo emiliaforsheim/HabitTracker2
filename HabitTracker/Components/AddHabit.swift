@@ -65,8 +65,9 @@ struct AddHabit: View {
                             .foregroundStyle(textColor)
                     }
                 }
+
                 ForEach(subtasks) { subtask in
-                    Text("- \(subtask)")
+                    Text("• \(subtask.title)")
                         .foregroundStyle(textColor)
                         .font(.subheadline)
                 }
@@ -98,7 +99,7 @@ struct AddHabit: View {
                     let newHabit = HabitModel(
                         name: habitName,
                         note: habitNote,
-                        color: selectedColor,
+                        colorHex: selectedColor.toHex(),
                         subtasks: subtasks,
                         startDate: selectedStartDate,
                         endDate: endDate
