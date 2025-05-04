@@ -9,17 +9,18 @@ import SwiftUI
 
 struct TabBar: View {
     
+    @StateObject private var viewModel = CalendarViewModel()
     @State private var selectedTab = 1
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            CalendarView()
+            CalendarView(viewModel: viewModel)
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
                 }
                 .tag(0)
             
-            HabitView()
+            HabitView(viewModel: viewModel)
                 .tabItem {
                     Label("Habits", systemImage: "checklist")
                 }
