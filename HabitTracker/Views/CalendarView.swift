@@ -11,7 +11,8 @@ import SwiftUI
 struct CalendarView: View {
     @State private var selectedDate = Date()
     @State private var showingAddHabit = false
-    @StateObject private var viewModel = CalendarViewModel()
+    //@StateObject private var viewModel = CalendarViewModel()
+    @ObservedObject var viewModel: CalendarViewModel
 
     var body: some View {
         ZStack {
@@ -39,14 +40,14 @@ struct CalendarView: View {
                         .padding(.horizontal)
                 } else {
                     ScrollView {
-                        VStack(spacing: -15) {
+                        VStack(spacing: 0) {
                             ForEach(habitsForSelectedDate) { habit in
                                 if let index = viewModel.habits.firstIndex(where: { $0.id == habit.id }) {
                                     TaskView(task: $viewModel.habits[index], selectedDate: selectedDate)
                                 }
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, -5)
                     }
                 }
 
@@ -93,5 +94,5 @@ struct CalendarView: View {
 }
 
 #Preview {
-    CalendarView()
+    CalendarView(viewModel: CalendarViewModel())
 }

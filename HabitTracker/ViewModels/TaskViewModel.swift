@@ -112,6 +112,7 @@ class TaskViewModel: ObservableObject {
 
         DispatchQueue.main.async {
             self.rotate = newState
+            //Self.ObjectWillChangePublisher().send()
         }
 
         recalculateStreak(for: task)
