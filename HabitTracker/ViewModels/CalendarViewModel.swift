@@ -14,11 +14,11 @@ class CalendarViewModel: ObservableObject {
 
     func loadHabits() {
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("🚫 Ingen användare inloggad")
+            print("No User logged in")
             return
         }
 
-        print("📡 Hämtar habits för userID: \(userId)")
+        print("Fetching habits for userID: \(userId)")
 
         Firestore.firestore()
             .collection("users")
@@ -26,7 +26,7 @@ class CalendarViewModel: ObservableObject {
             .collection("habits")
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("❌ Fel vid hämtning: \(error.localizedDescription)")
+                    print("Error fetching habits: \(error.localizedDescription)")
                     return
                 }
 
@@ -36,30 +36,33 @@ class CalendarViewModel: ObservableObject {
                     do {
                         return try doc.data(as: HabitModel.self)
                     } catch {
-                        print("❌ Kunde inte decoda habit: \(error)")
+                        print("Failed to decode habit: \(error)")
                         return nil
                     }
                 }
 
                 DispatchQueue.main.async {
                     self.habits = fetchedHabits
-                    print("✅ Hämtade \(fetchedHabits.count) habits")
+                    print("Loaded \(fetchedHabits.count) habits")
                 }
             }
     }
 
+    // Saves a new habit to Firestore and updates local state
     func addHabit(_ habit: HabitModel) {
+        // Ensure user i logged in
         guard let userId = Auth.auth().currentUser?.uid else { return }
 
         do {
+            // Store habit in firestore
             try Firestore.firestore()
                 .collection("users")
                 .document(userId)
                 .collection("habits")
-                .document(habit.id.uuidString) // OBS! Använd UUID-sträng som ID
+                .document(habit.id.uuidString)
                 .setData(from: habit)
 
-            // Uppdatera lokalt direkt
+            // Append new habit locally to update the UI immediately
             DispatchQueue.main.async {
                 self.habits.append(habit)
             }
@@ -68,6 +71,7 @@ class CalendarViewModel: ObservableObject {
         }
     }
 
+    // Returns the list of habits that are active on a given date
     func habitsForDate(_ date: Date) -> [HabitModel] {
         let selected = Calendar.current.startOfDay(for: date)
 

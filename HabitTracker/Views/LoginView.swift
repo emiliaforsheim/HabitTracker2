@@ -28,12 +28,14 @@ struct LoginView: View {
                 VStack {
                     Image("Logga")
                         .resizable()
-                        .frame(width: 280, height: 200)
+                        .frame(width: 300, height: 200)
+                        .padding(.top, -100)
+                        .padding(.bottom, 10)
                     
                     VStack {
                         Text("Habit Tracker")
-                        //.bold()
                             .font(.largeTitle)
+                            .padding(.bottom, 50)
                         
                         if !viewModel.errorMessage.isEmpty {
                             Text(viewModel.errorMessage)
@@ -43,6 +45,7 @@ struct LoginView: View {
                         CustomTextField(text: $viewModel.email, placeHolder: "Email", image: "envelope")
                         
                         CustomTextField(text: $viewModel.password, placeHolder: "Password", image: "lock", isSecure: true)
+                            .padding(.bottom)
                         
                         CustomButton(label: "Login") {
                             viewModel.login { success in

@@ -11,6 +11,7 @@ struct TabBar: View {
     
     @StateObject private var viewModel = CalendarViewModel()
     @State private var selectedTab = 1
+    var onLogout: () -> Void
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -26,7 +27,7 @@ struct TabBar: View {
                 }
                 .tag(1)
             
-            ProfileView()
+            ProfileView(viewModel: viewModel, onLogout: onLogout)
                 .tabItem {
                     Label("Profile", systemImage: "person")
                 }
@@ -34,8 +35,4 @@ struct TabBar: View {
         }
         .tint(.black)
     }
-}
-
-#Preview {
-    TabBar()
 }

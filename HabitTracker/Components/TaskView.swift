@@ -22,6 +22,7 @@ struct TaskView: View {
     var body: some View {
         VStack {
             ZStack {
+                // Card background with animation
                 RoundedRectangle(cornerRadius: 25)
                     .fill(viewModel.gradient)
                     .shadow(radius: 4)
@@ -35,17 +36,21 @@ struct TaskView: View {
             .animation(.easeInOut(duration: 0.8), value: viewModel.rotate)
         }
         .onAppear {
+            // Load subtask completion states when view appears
             viewModel.loadSubtaskStates(from: task)
         }
         .onChange(of: selectedDate) {
+            // Update completion state when selected date changes
             viewModel.selectedDate = selectedDate
             viewModel.loadSubtaskStates(from: task)
         }
     }
 
+    // MARK: UI for habit card
     private func cardView() -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
+                // Completion toggle button
                 Button(action: {
                     viewModel.toggleCompletion(for: $task)
                 }) {
@@ -61,8 +66,10 @@ struct TaskView: View {
 
                 Spacer()
 
+                // Circular progress based on subtask completion
                 CircularProgressView(progress: viewModel.completionPercentage)
 
+                // Current streak
                 ZStack {
                     Image(systemName: "star.fill")
                         .resizable()
@@ -73,6 +80,7 @@ struct TaskView: View {
                         .foregroundColor(.black)
                 }
 
+                // Expand//collapse button for extra info
                 Button(action: {
                     withAnimation {
                         viewModel.isExpanded.toggle()
@@ -84,32 +92,37 @@ struct TaskView: View {
                 }
             }
 
+            // MARK: Expanded view content
             if viewModel.isExpanded {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(task.note)
                         .foregroundColor(.black)
                         .font(.subheadline)
 
+                    // Show start date
                     Text("Start: \(viewModel.formatted(task.startDate))")
                         .foregroundColor(.black)
                         .font(.footnote)
 
+                    // Show end date if exists
                     if let end = task.endDate {
-                        Text("Slutar: \(viewModel.formatted(end))")
+                        Text("End: \(viewModel.formatted(end))")
                             .foregroundColor(.black)
                             .font(.footnote)
                     } else {
-                        Text("Varar för alltid")
+                        Text("Always")
                             .foregroundColor(.black)
                             .font(.footnote)
                     }
 
+                    // Show subtask
                     if !task.subtasks.isEmpty {
                         Divider().padding(.vertical, 5)
 
                         VStack(alignment: .leading, spacing: 6) {
                             ForEach(task.subtasks) { subtask in
                                 HStack {
+                                    // Toggle subtask completion
                                     Button(action: {
                                         viewModel.toggleSubtask(subtask.id, in: $task)
                                     }) {
@@ -130,6 +143,7 @@ struct TaskView: View {
     }
 }
 
+// Helper dateformatter
 extension DateFormatter {
     static let taskDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -137,7 +151,7 @@ extension DateFormatter {
         return formatter
     }()
 }
-
+// MARK: View showing circular progress as percentage
 struct CircularProgressView: View {
     var progress: Double
 
@@ -161,6 +175,7 @@ struct CircularProgressView: View {
     }
 }
 
+// Preview
 struct TaskViewPreviewWrapper: View {
     @State private var task = HabitModel(
         name: "Exempel Task",

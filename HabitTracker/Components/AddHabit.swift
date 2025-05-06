@@ -35,6 +35,7 @@ struct AddHabit: View {
             TextField("Description", text: $habitNote)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
 
+            // MARK: Days or always
             Toggle("Always", isOn: $isForever)
                 .foregroundStyle(textColor)
 
@@ -48,6 +49,7 @@ struct AddHabit: View {
                 }
             }
 
+            // MARK: Subtask
             VStack(alignment: .leading, spacing: 5) {
                 HStack {
                     TextField("Add Subtask", text: $newSubTask)
@@ -66,6 +68,7 @@ struct AddHabit: View {
                     }
                 }
 
+                // Subtask list
                 ForEach(subtasks) { subtask in
                     Text("• \(subtask.title)")
                         .foregroundStyle(textColor)
@@ -73,6 +76,7 @@ struct AddHabit: View {
                 }
             }
 
+            // MARK: Colorpicker
             HStack {
                 Text("Pick Color")
                     .foregroundStyle(textColor)
@@ -92,10 +96,12 @@ struct AddHabit: View {
                 Spacer()
 
                 Button("Save") {
+                    // Calculate end date if not forever
                     let endDate = isForever
                         ? nil
                         : Calendar.current.date(byAdding: .day, value: habitDurationDays, to: selectedStartDate)
 
+                    // Create and save the new habit
                     let newHabit = HabitModel(
                         name: habitName,
                         note: habitNote,
@@ -119,6 +125,7 @@ struct AddHabit: View {
     }
 }
 
+// Black or white text color
 extension Color {
     var isDarkColor: Bool {
         let uiColor = UIColor(self)

@@ -19,6 +19,7 @@ class RegisterViewModel: ObservableObject {
     
     init() {}
     
+    // MARK: Register functions
     func register(completion: @escaping (Bool) -> Void) {
         guard validate() else {
             completion(false)
@@ -40,6 +41,7 @@ class RegisterViewModel: ObservableObject {
         }
     }
     
+    // MARK: Save new user to Firestore
     private func createUser(id: String, completion: @escaping () -> Void) {
         let newUser = UserModel(id: id, name: name, email: email, joined: Date().timeIntervalSince1970)
         let db = Firestore.firestore()
@@ -56,7 +58,10 @@ class RegisterViewModel: ObservableObject {
             }
     }
     
+    // MARK: Input validation
+    
     private func validate() -> Bool {
+        // Make sure none of the fields are empty
         guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
               !password.trimmingCharacters(in: .whitespaces).isEmpty,
               !name.trimmingCharacters(in: .whitespaces).isEmpty

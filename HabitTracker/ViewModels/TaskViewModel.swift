@@ -19,11 +19,12 @@ import FirebaseFirestore
 class TaskViewModel: ObservableObject {
     @Published var isExpanded = false
     @Published var rotate = false
-    @Published var subtaskStates: [UUID: Bool] = [:]
+    @Published var subtaskStates: [UUID: Bool] = [:] // Tracks wich subtask are complete
     private(set) var task: HabitModel
-    var selectedDate: Date {
+    
+    var selectedDate: Date { // Currently selected date
         didSet {
-            loadSubtaskStates(from: task)
+            loadSubtaskStates(from: task) // Reload subtask states when date changes
         }
     }
 
@@ -37,6 +38,7 @@ class TaskViewModel: ObservableObject {
         self.loadSubtaskStates(from: task)
     }
 
+    // Calculates the percentage of completed subtask
     var completionPercentage: Double {
         guard !subtaskStates.isEmpty else { return 0 }
         let completed = subtaskStates.values.filter { $0 }.count
@@ -83,6 +85,7 @@ class TaskViewModel: ObservableObject {
         task.wrappedValue.subtaskCompletionByDate?[dateKey] = subtaskStates
     }
 
+    // Updates the main task overall completion state based on subtasks
     func updateMainCompletion(for task: Binding<HabitModel>) {
         let allComplete = subtaskStates.values.allSatisfy { $0 }
         if task.wrappedValue.completionByDate == nil {
@@ -98,6 +101,7 @@ class TaskViewModel: ObservableObject {
         saveTask(task.wrappedValue)
     }
 
+    // Toggles overall task completion includes all subtasks
     func toggleCompletion(for task: Binding<HabitModel>) {
         let newState = !(task.wrappedValue.completionByDate?[dateKey] ?? false)
 
@@ -106,19 +110,21 @@ class TaskViewModel: ObservableObject {
         }
         task.wrappedValue.completionByDate?[dateKey] = newState
 
-        // Mark all subtasks as complete or incomplete
+        // Set subtasks to same state
         subtaskStates = subtaskStates.mapValues { _ in newState }
         saveSubtaskStates(to: task)
 
         DispatchQueue.main.async {
             self.rotate = newState
-            //Self.ObjectWillChangePublisher().send()
         }
 
         recalculateStreak(for: task)
         saveTask(task.wrappedValue)
     }
 
+    // MARK: Streak logic
+    
+    // Recalculates the current streak based on past completion
     func recalculateStreak(for task: Binding<HabitModel>) {
         let completionMap = task.wrappedValue.completionByDate ?? [:]
 
@@ -151,7 +157,7 @@ class TaskViewModel: ObservableObject {
                 .document(task.id.uuidString)
                 .setData(data, merge: true)
         } catch {
-            print("❌ Failed to save task: \(error)")
+            print("Failed to save habit: \(error)")
         }
     }
 }
