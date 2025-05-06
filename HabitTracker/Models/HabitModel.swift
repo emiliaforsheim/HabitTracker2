@@ -16,6 +16,7 @@ struct HabitModel: Identifiable, Codable {
     var subtasks: [Subtask]
     var startDate: Date
     var endDate: Date?
+    var isForever: Bool = false
     var completionByDate: [String: Bool]? = nil
     var subtaskCompletionByDate: [String: [UUID: Bool]]? = nil
     var currentStreak: Int = 0

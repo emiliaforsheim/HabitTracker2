@@ -75,7 +75,7 @@ class RegisterViewModel: ObservableObject {
             return false
         }
         
-        guard password.count > 6 else {
+        guard password.count > 5 else {
             errorMessage = "Password should be at least 6 characters long"
             return false
         }

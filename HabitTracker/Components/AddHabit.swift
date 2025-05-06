@@ -108,7 +108,8 @@ struct AddHabit: View {
                         colorHex: selectedColor.toHex(),
                         subtasks: subtasks,
                         startDate: selectedStartDate,
-                        endDate: endDate
+                        endDate: endDate,
+                        isForever: isForever
                     )
 
                     onSave(newHabit)
