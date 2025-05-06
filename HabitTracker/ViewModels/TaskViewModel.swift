@@ -5,12 +5,6 @@
 //  Created by Emilia Forsheim on 2025-05-02.
 //
 
-//
-//  TaskViewModel.swift
-//  HabitTracker
-//
-//  Created by Emilia Forsheim on 2025-05-02.
-//
 
 import SwiftUI
 import FirebaseAuth
@@ -40,13 +34,16 @@ class TaskViewModel: ObservableObject {
 
     // Calculates the percentage of completed subtask
     var completionPercentage: Double {
-        guard !subtaskStates.isEmpty else { return 0 }
-        let completed = subtaskStates.values.filter { $0 }.count
-        return Double(completed) / Double(subtaskStates.count)
+        if task.subtasks.isEmpty {
+            return task.completionByDate?[dateKey] == true ? 1.0 : 0.0
+        } else {
+            let completed = subtaskStates.values.filter { $0 }.count
+            return Double(completed) / Double(subtaskStates.count)
+        }
     }
 
     var isCompletedToday: Bool {
-        completionPercentage == 1.0
+        return task.completionByDate?[dateKey] == true
     }
 
     var gradient: LinearGradient {
@@ -87,7 +84,14 @@ class TaskViewModel: ObservableObject {
 
     // Updates the main task overall completion state based on subtasks
     func updateMainCompletion(for task: Binding<HabitModel>) {
-        let allComplete = subtaskStates.values.allSatisfy { $0 }
+        var allComplete = false
+
+        if task.wrappedValue.subtasks.isEmpty {
+            allComplete = task.wrappedValue.completionByDate?[dateKey] ?? false
+        } else {
+            allComplete = subtaskStates.values.allSatisfy { $0 }
+        }
+
         if task.wrappedValue.completionByDate == nil {
             task.wrappedValue.completionByDate = [:]
         }
@@ -99,6 +103,8 @@ class TaskViewModel: ObservableObject {
 
         recalculateStreak(for: task)
         saveTask(task.wrappedValue)
+        
+        self.task = task.wrappedValue
     }
 
     // Toggles overall task completion includes all subtasks
@@ -110,7 +116,8 @@ class TaskViewModel: ObservableObject {
         }
         task.wrappedValue.completionByDate?[dateKey] = newState
 
-        // Set subtasks to same state
+        self.task = task.wrappedValue
+
         subtaskStates = subtaskStates.mapValues { _ in newState }
         saveSubtaskStates(to: task)
 
@@ -118,8 +125,7 @@ class TaskViewModel: ObservableObject {
             self.rotate = newState
         }
 
-        recalculateStreak(for: task)
-        saveTask(task.wrappedValue)
+        updateMainCompletion(for: task)
     }
 
     // MARK: Streak logic
