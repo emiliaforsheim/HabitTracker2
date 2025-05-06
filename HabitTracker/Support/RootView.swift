@@ -12,7 +12,9 @@ struct RootView: View {
     
     var body: some View {
         if isLoggedIn {
-            TabBar()
+            TabBar {
+                isLoggedIn = false
+            }
         } else {
             LoginView {
                 isLoggedIn = true

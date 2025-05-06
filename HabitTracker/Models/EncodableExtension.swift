@@ -7,6 +7,7 @@
 
 import Foundation
 
+// MARK: - Extension to convert any Encodable object to a dictionary
 extension Encodable {
     func asDict() -> [String: Any] {
         guard let data = try? JSONEncoder().encode(self) else {

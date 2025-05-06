@@ -11,7 +11,6 @@ import SwiftUI
 struct CalendarView: View {
     @State private var selectedDate = Date()
     @State private var showingAddHabit = false
-    //@StateObject private var viewModel = CalendarViewModel()
     @ObservedObject var viewModel: CalendarViewModel
 
     var body: some View {
@@ -24,7 +23,7 @@ struct CalendarView: View {
             .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 16) {
-                DatePicker("Välj datum", selection: $selectedDate, displayedComponents: [.date])
+                DatePicker("", selection: $selectedDate, displayedComponents: [.date])
                     .datePickerStyle(.graphical)
                     .padding()
                     .background(Color.white.opacity(0.2))

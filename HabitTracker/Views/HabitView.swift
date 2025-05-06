@@ -30,7 +30,7 @@ struct HabitView: View {
                     let habits = viewModel.habitsForDate(selectedDate)
                     
                     if habits.isEmpty {
-                        Text("Inga habits för \(formattedDate(selectedDate))")
+                        Text("No habits for \(formattedDate(selectedDate))")
                             .foregroundColor(.white)
                             .padding()
                     } else {
@@ -116,7 +116,7 @@ struct HabitView: View {
 
     private func shortDayName(from date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "sv_SE")
+        formatter.locale = Locale(identifier: "en_US")
         formatter.dateFormat = "E"
         return formatter.string(from: date).capitalized
     }

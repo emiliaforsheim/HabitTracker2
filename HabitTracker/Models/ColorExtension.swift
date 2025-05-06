@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 
+// MARK: Extension to convert between Color and Hex String
 extension Color {
     func toHex() -> String {
         let uiColor = UIColor(self)

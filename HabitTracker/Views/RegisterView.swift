@@ -22,7 +22,7 @@ struct RegisterView: View {
             VStack {
                 Image("Logga")
                     .resizable()
-                    .frame(width: 280, height: 200)
+                    .frame(width: 300, height: 200)
                 
                 VStack {
                     Text("Create Account")
