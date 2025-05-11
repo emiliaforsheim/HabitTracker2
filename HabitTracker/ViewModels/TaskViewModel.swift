@@ -14,7 +14,7 @@ class TaskViewModel: ObservableObject {
     @Published var isExpanded = false
     @Published var rotate = false
     @Published var subtaskStates: [UUID: Bool] = [:] // Tracks wich subtask are complete
-    private(set) var task: HabitModel
+    @Published var task: HabitModel
     
     var selectedDate: Date { // Currently selected date
         didSet {

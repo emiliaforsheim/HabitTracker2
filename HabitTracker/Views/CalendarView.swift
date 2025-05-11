@@ -84,7 +84,6 @@ struct CalendarView: View {
             }
         }
         .onAppear {
-            print("📆 CalendarView visas – laddar habits")
             viewModel.loadHabits()
         }
         .animation(.easeInOut, value: showingAddHabit)
