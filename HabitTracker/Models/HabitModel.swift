@@ -8,7 +8,7 @@
 import SwiftUI
 import FirebaseFirestore
 
-struct HabitModel: Identifiable, Codable {
+struct HabitModel: Identifiable, Codable, Equatable {
     var id = UUID()
     var name: String
     var note: String
@@ -22,7 +22,7 @@ struct HabitModel: Identifiable, Codable {
     var currentStreak: Int = 0
     var lastCompletedDate: Date?
 
-    struct Subtask: Identifiable, Codable {
+    struct Subtask: Identifiable, Codable, Equatable {
         var id = UUID()
         var title: String
         var isCompleted: Bool

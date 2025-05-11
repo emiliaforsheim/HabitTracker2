@@ -36,11 +36,14 @@ struct TaskView: View {
             .animation(.easeInOut(duration: 0.8), value: viewModel.rotate)
         }
         .onAppear {
-            // Load subtask completion states when view appears
+            viewModel.task = task
+            viewModel.selectedDate = selectedDate
             viewModel.loadSubtaskStates(from: task)
         }
-        .onChange(of: selectedDate) {
-            // Update completion state when selected date changes
+        .onChange(of: task, initial: false) { oldTask, newTask in
+            viewModel.task = newTask
+        }
+        .onChange(of: selectedDate, initial: false) {
             viewModel.selectedDate = selectedDate
             viewModel.loadSubtaskStates(from: task)
         }

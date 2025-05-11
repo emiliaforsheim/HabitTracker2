@@ -162,8 +162,8 @@ struct ProfileView: View {
 #Preview {
     let mockHabits = [
         HabitModel(
-            name: "Meditera",
-            note: "10 min varje morgon",
+            name: "Springa",
+            note: "varje morgon",
             colorHex: "#FF6F61",
             subtasks: [],
             startDate: Date(),
@@ -191,8 +191,8 @@ struct ProfileView: View {
     let mockProfileViewModel = ProfileViewModel()
     mockProfileViewModel.user = UserModel(
         id: "123",
-        name: "Emilia Forsheim",
-        email: "emilia@example.com",
+        name: "exempel",
+        email: "exempel@exemple.com",
         joined: Date().timeIntervalSince1970
     )
 

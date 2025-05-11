@@ -67,7 +67,7 @@ class CalendarViewModel: ObservableObject {
                 self.habits.append(habit)
             }
         } catch {
-            print("❌ Failed to save habit: \(error.localizedDescription)")
+            print("Failed to save habit: \(error.localizedDescription)")
         }
     }
 
